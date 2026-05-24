@@ -1,0 +1,60 @@
+---
+description: 本项目已安装 Unity MCP（Coplay MCPForUnity），需要操作 Unity 编辑器时优先通过 unityMCP 工具完成，而非让用户手动操作。
+alwaysApply: true
+---
+
+# Unity MCP 集成
+
+本项目已安装 **MCP for Unity**（`com.coplaydev.unity-mcp`），Cursor 通过 MCP 服务 **`unityMCP`** 直接控制 Unity 编辑器。
+
+## 何时使用
+
+涉及以下任务时，**优先调用 unityMCP 工具**，不要只写步骤让用户自己去 Unity 里点：
+
+- 场景 / GameObject / 组件的增删改查
+- 运行、暂停、停止 Play 模式
+- 添加 Collider、材质、脚本引用等编辑器操作
+- 读取 Console、跑测试、截图验证
+- 在编辑器内执行 C#（`execute_code`）
+
+## 前置条件
+
+1. Unity 编辑器已打开本项目（`shanhaijing2026`）
+2. **Window → MCP for Unity** 中 Unity Bridge 为 **Running**（Stdio 默认端口 **6400**）
+3. Cursor 已配置并连接 `unityMCP`（Stdio 推荐）：
+
+```json
+"unityMCP": {
+  "type": "stdio",
+  "command": "C:\\Users\\Administrator\\.local\\bin\\uvx.exe",
+  "args": ["--from", "mcpforunityserver==9.7.0", "mcp-for-unity", "--transport", "stdio"]
+}
+```
+
+连通性快速检查：`mcporter list` 应显示 `unityMCP (42 tools)` 为 healthy。
+
+## 常用工具
+
+| 工具 | 用途 |
+|------|------|
+| `manage_editor` | `play` / `pause` / `stop` |
+| `manage_scene` | 场景层级、保存、加载 |
+| `manage_gameobject` | 创建 / 修改 / 删除对象 |
+| `manage_components` | 添加 / 移除 / 设置组件属性 |
+| `find_gameobjects` | 按名称、组件等搜索对象 |
+| `manage_asset` | 资源 CRUD |
+| `read_console` | 读 Unity Console |
+| `batch_execute` | 批量操作（多个命令时优先） |
+
+## 操作原则
+
+1. **先查再改**：用 `find_gameobjects`、`manage_scene get_hierarchy` 确认目标对象与 instance ID。
+2. **改完保存**：场景/预制体变更后调用 `manage_scene action=save`。
+3. **API 不猜测**：写 C# 或调组件属性前，用 `unity_reflect` / `unity_docs` 核实类型与成员。
+4. **Play 模式**：可用 `manage_editor action=play` 验证运行时行为；Play 中编辑能力有限，与手动 Play 相同。
+5. **批量优先**：同类重复操作使用 `batch_execute`，减少往返。
+
+## 限制
+
+- 需要 Unity 编辑器在运行；不能替代 Build 后的独立 exe。
+- Bridge 未启动或 MCP 未连接时，应先排查连接，再 fallback 到改场景/脚本文件。
