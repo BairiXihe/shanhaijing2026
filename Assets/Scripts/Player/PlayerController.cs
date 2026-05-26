@@ -23,6 +23,15 @@ public class PlayerController : MonoBehaviour
     int _jumpsRemaining;
     float _facingDirection = 1f;
 
+    // 来自配表的运行时数值（供战斗等系统读取）
+    int _maxHp;
+    int _attackDamage;
+    float _attackKnockback;
+
+    public int MaxHp => _maxHp;
+    public int AttackDamage => _attackDamage;
+    public float AttackKnockback => _attackKnockback;
+
     void Awake()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
@@ -30,6 +39,30 @@ public class PlayerController : MonoBehaviour
 
         if (groundLayer.value == 0)
             groundLayer = LayerMask.GetMask("Ground");
+    }
+
+    void Start()
+    {
+        ApplyPlayerConfig();
+    }
+
+    void ApplyPlayerConfig()
+    {
+        if (!ConfigManager.HasInstance)
+            return;
+
+        var data = ConfigManager.Instance.GetPlayerData();
+        if (data == null)
+            return;
+
+        moveSpeed = data.MoveSpeed;
+        jumpForce = data.JumpForce;
+        doubleJumpForce = data.DoubleJumpForce;
+        _maxHp = data.MaxHp;
+        _attackDamage = data.AttackDamage;
+        _attackKnockback = data.AttackKnockback;
+        _hurtInvincibleTime = data.HurtInvincibleTime;
+        _hurtStunTime = data.HurtStunTime;
     }
 
     void Update()
