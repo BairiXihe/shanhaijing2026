@@ -27,10 +27,13 @@ public class PlayerController : MonoBehaviour
     int _maxHp;
     int _attackDamage;
     float _attackKnockback;
+    float _hurtInvincibleTime;
+    float _hurtStunTime;
 
     public int MaxHp => _maxHp;
     public int AttackDamage => _attackDamage;
     public float AttackKnockback => _attackKnockback;
+    public float HurtInvincibleTime => _hurtInvincibleTime;
 
     void Awake()
     {
